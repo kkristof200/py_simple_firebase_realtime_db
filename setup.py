@@ -10,7 +10,7 @@ else:
 
 setuptools.setup(
     name='simple_firebase_realtime_db',
-    version='0.0.1',
+    version='0.0.2',
     author='Kristóf-Attila Kovács',
     description='simple_firebase_realtime_db',
     long_description=long_description,
@@ -19,8 +19,8 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'firebase-admin>=4.5.2',
-        'jsoncodable>=0.0.12',
-        'noraise>=0.0.10'
+        'jsoncodable>=0.0.22',
+        'noraise>=0.0.20'
     ],
     classifiers=[
         'Programming Language :: Python :: 3.4',
