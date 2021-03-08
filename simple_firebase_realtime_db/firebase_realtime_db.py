@@ -94,7 +94,7 @@ class FirebaseRealtimeDB:
         path: str
     ) -> Optional[JSONData]:
         @noraise()
-        def __update_callback(old_value: JSONCodable) -> JSONCodable:
+        def __update_callback(old_value: JSONData) -> JSONData:
             return cls.__get_json_data(update_callback(old_value))
 
         return cls.__ref(path).transaction(__update_callback)
