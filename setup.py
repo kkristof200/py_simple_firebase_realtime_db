@@ -10,7 +10,7 @@ else:
 
 setuptools.setup(
     name='simple_firebase_realtime_db',
-    version='0.0.3',
+    version='0.0.4',
     author='Kristóf-Attila Kovács',
     description='simple_firebase_realtime_db',
     long_description=long_description,

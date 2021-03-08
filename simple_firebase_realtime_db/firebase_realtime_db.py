@@ -1,12 +1,12 @@
 # --------------------------------------------------------------- Imports ---------------------------------------------------------------- #
 
 # System
-from typing import Optional, Union, Dict, Callable
+from typing import Optional, Union, List, Dict, Callable, Hashable
 
 # Pip
 from firebase_admin import db, initialize_app
 from firebase_admin.credentials import Certificate
-from firebase_admin.db import Reference, ListenerRegistration, Event
+from firebase_admin.db import Reference, ListenerRegistration, Event, Query
 
 from jsoncodable import JSONCodable
 from noraise import noraise
@@ -53,7 +53,7 @@ class FirebaseRealtimeDB:
         path: str,
         shallow: bool = False
     ) -> Optional[JSONData]:
-        return cls.__ref(path).get(shallow=shallow)
+        return cls.ref(path).get(shallow=shallow)
 
     @classmethod
     @noraise(default_return_value=False)
@@ -62,7 +62,7 @@ class FirebaseRealtimeDB:
         data: Union[JSONCodable, JSONData],
         path: str
     ) -> bool:
-        cls.__ref(path).set(cls.__get_json_data(data))
+        cls.ref(path).set(cls.__get_json_data(data))
 
         return True
 
@@ -73,7 +73,7 @@ class FirebaseRealtimeDB:
         data: Dict[str, Union[JSONCodable, JSONData]],
         path: str
     ) -> bool:
-        cls.__ref(path).update({ k:cls.__get_json_data(v) for k, v in data.items() })
+        cls.ref(path).update({ k:cls.__get_json_data(v) for k, v in data.items() })
 
         return True
 
@@ -84,7 +84,7 @@ class FirebaseRealtimeDB:
         callback: Callable[[Event], None],
         path: str
     ) -> Optional[ListenerRegistration]:
-        return cls.__ref(path).listen(callback)
+        return cls.ref(path).listen(callback)
 
     @classmethod
     @noraise()
@@ -97,7 +97,17 @@ class FirebaseRealtimeDB:
         def __update_callback(old_value: JSONData) -> JSONData:
             return cls.__get_json_data(update_callback(old_value))
 
-        return cls.__ref(path).transaction(__update_callback)
+        return cls.ref(path).transaction(__update_callback)
+
+    @classmethod
+    @noraise()
+    def query(
+        cls,
+        path: str,
+        where: str,
+        equals_to: Hashable
+    ) -> List[JSONData]:
+        return cls.ref(path).order_by_child(where).equal_to(equals_to).get()
 
     @classmethod
     @noraise(default_return_value=False)
@@ -105,18 +115,20 @@ class FirebaseRealtimeDB:
         cls,
         path: str
     ) -> bool:
-        cls.__ref(path).delete()
+        cls.ref(path).delete()
 
         return True
 
+    @staticmethod
+    def ref(
+        path: Optional[str] = None
+    ) -> Reference:
+        path = path or ''
+
+        return db.reference('/{}'.format(path.strip('/')))
+
 
     # ------------------------------------------------------- Private methods -------------------------------------------------------- #
-
-    @staticmethod
-    def __ref(
-        path: str = ''
-    ) -> Reference:
-        return db.reference('/{}'.format(path.strip('/')))
 
     @staticmethod
     def __get_json_data(value: Union[JSONCodable, JSONData]) -> JSONData:
